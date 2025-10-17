@@ -1,4 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
+import { Repository } from 'typeorm'
+import { User } from './user.entity'
+import { InjectRepository } from '@nestjs/typeorm'
 
 @Injectable()
-export class UsersService {}
+export class UsersService {
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
+
+  async createUserAsync(email: string, password: string) {
+    const user = this.userRepository.create({ email, password })
+    return await this.userRepository.save(user)
+  }
+}
