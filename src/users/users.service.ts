@@ -10,16 +10,28 @@ export class UsersService {
   ) {}
 
   async createUserAsync(email: string, password: string) {
+    if (!email.length || !password.length) {
+      return null
+    }
+
     const user = this.userRepository.create({ email, password })
     return await this.userRepository.save(user)
   }
 
   async getUserByIdAsync(id: number) {
+    if (!id) {
+      return null
+    }
+
     const user = await this.userRepository.findOneBy({ id })
     return user
   }
 
   async getUserByEmailAsync(email: string) {
+    if (!email.length) {
+      return null
+    }
+
     const user = this.userRepository.findOneBy({ email })
     return user
   }

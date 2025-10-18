@@ -7,6 +7,10 @@ export class AuthService {
   constructor(private usersService: UsersService) {}
 
   async verifyAysnc(email: string, password: string) {
+    if (!email.length || !password.length) {
+      return null
+    }
+
     const user = await this.usersService.getUserByEmailAsync(email)
     if (!user) {
       return null
@@ -20,21 +24,29 @@ export class AuthService {
   }
 
   async resetPassword(userId: number, password: string) {
-    var user = await this.usersService.getUserByIdAsync(userId)
+    if (!userId || !password.length) {
+      return
+    }
+
+    const user = await this.usersService.getUserByIdAsync(userId)
     if (!user) {
       return
     }
 
-    var salt = await genSalt()
-    var hashedPassword = await hash(password, salt)
+    const salt = await genSalt()
+    const hashedPassword = await hash(password, salt)
 
     user.password = hashedPassword
     await this.usersService.updateUserAsync(user)
   }
 
   async registerAsync(email: string, password: string) {
-    var salt = await genSalt()
-    var hashedPassword = await hash(password, salt)
+    if (!email.length || !password.length) {
+      return null
+    }
+
+    const salt = await genSalt()
+    const hashedPassword = await hash(password, salt)
 
     return await this.usersService.createUserAsync(email, hashedPassword)
   }

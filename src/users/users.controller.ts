@@ -3,33 +3,25 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   Session,
+  UseGuards,
 } from '@nestjs/common'
 import { CreateUserDto } from './dtos/create-user.dto'
 import { AuthService } from './auth.service'
 import { LoginUserDto } from './dtos/login-user.dto'
-import { UsersService } from './users.service'
+import { CurrentUser } from './decorators/current-user.decorator'
+import { User } from './user.entity'
+import { AuthGuard } from './guards/auth.guard'
 
 @Controller('auth')
 export class UsersController {
-  constructor(
-    private authService: AuthService,
-    private userService: UsersService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
-  @Get('colors')
-  async getColor(@Session() session: Record<string, any>) {
-    return session['color']
-  }
-
-  @Get('colors/:color')
-  async setColor(
-    @Param('color') color: string,
-    @Session() session: Record<string, any>,
-  ) {
-    session['color'] = color
+  @Get('whoami')
+  @UseGuards(AuthGuard)
+  async whoAmI(@CurrentUser() currentUser: User | null) {
+    return currentUser ? { message: 'logged in' } : { message: 'not logged in' }
   }
 
   @Post('signup')
@@ -39,6 +31,9 @@ export class UsersController {
   ) {
     const { email, password } = createUserDto
     const user = await this.authService.registerAsync(email, password)
+    if (!user) {
+      return new BadRequestException()
+    }
 
     session['user-id'] = user.id
     return { id: user.id, email: user.email }
@@ -59,14 +54,8 @@ export class UsersController {
     return { id: user.id, email: user.email }
   }
 
-  @Get('whoami')
-  async whoAmIAsync(@Session() session: Record<string, any>) {
-    const userId = session['user-id'] as number
-    const user = await this.userService.getUserByIdAsync(userId)
-    if (!user) {
-      return new BadRequestException()
-    }
-
-    return { id: user.id, email: user.email }
+  @Get('signout')
+  async signout(@Session() session: Record<string, any>) {
+    session['user-id'] = null
   }
 }
