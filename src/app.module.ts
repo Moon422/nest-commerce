@@ -2,9 +2,18 @@ import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { CacheKeyService } from './services/caching/cache-key.service'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { Customer } from './entities/customers/customer'
 
 @Module({
-  imports: [],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'db.sqlite',
+      entities: [Customer],
+      synchronize: true,
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService, CacheKeyService],
 })
