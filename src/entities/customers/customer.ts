@@ -57,9 +57,8 @@ export class Customer {
   @Column({ type: 'int', nullable: true })
   languageId: number | null
 
-  @Column({ length: 1024 })
-  adminComment: string
-
+  @Column({ type: 'varchar', length: 1024, nullable: true })
+  adminComment: string | null
   @Column()
   isTaxExempted: boolean
 

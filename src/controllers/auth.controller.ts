@@ -11,7 +11,10 @@ import { CustomerPasswordService } from 'src/services/customers/customer-passwor
 import { CustomerService } from 'src/services/customers/customer.service'
 import { v4 as uuid4 } from 'uuid'
 import moment from 'moment-timezone'
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { Customer } from 'src/entities/customers/customer'
 
+@ApiTags('Products')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -20,6 +23,11 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @ApiOperation({ summary: 'Login to account' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logged in to account successfully',
+  })
   async login(@Body() loginDto: LoginDto) {
     const customer = await this.customerService.getCustomerByEmailAsync(
       loginDto.email,
@@ -42,11 +50,21 @@ export class AuthController {
   }
 
   @Get('logout')
+  @ApiOperation({ summary: 'Log out from account' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logged out from account successfully',
+  })
   logout() {
     return {}
   }
 
   @Post('register')
+  @ApiOperation({ summary: 'Register new account' })
+  @ApiResponse({
+    status: 201,
+    description: 'Registered new account successfully',
+  })
   async register(@Body() registerDto: RegisterDto) {
     if (
       (await this.customerService.getCustomerByEmailAsync(registerDto.email)) ||
@@ -77,6 +95,8 @@ export class AuthController {
       languageId,
       password,
     } = registerDto
+
+    console.log(registerDto)
 
     const customer = await this.customerService.createCustomerAsync({
       customerGuid: uuid4(),
