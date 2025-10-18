@@ -9,3 +9,5 @@ export function cacheKeyByIds(typeName: string): string {
 export function cacheKeyAll(typeName: string): string {
   return `nest.${typeName}.all`
 }
+
+export const NEST_CACHE_TTL = 300000

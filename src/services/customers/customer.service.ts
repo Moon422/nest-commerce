@@ -1,15 +1,31 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Customer } from 'src/entities/customers/customer'
 import { Repository } from 'typeorm'
 import PagedList, { toPagedList } from '../paged-list'
 import { CustomerFilters } from './customer.filter'
+import moment from 'moment'
+import { CacheKeyService } from '../caching/cache-key.service'
+import {
+  cacheKeyAll,
+  cacheKeyById,
+  cacheKeyByIds,
+  NEST_CACHE_TTL,
+} from '../caching/entity-cache-defaults'
+import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager'
+import {
+  cacheKeyCustomerByEmail,
+  cacheKeyCustomerByGuid,
+  cacheKeyCustomerByUsername,
+} from './customer-cache-defaults'
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
     private customerRepository: Repository<Customer>,
+    private cacheKeyService: CacheKeyService,
+    @Inject(CACHE_MANAGER) private cache: Cache,
   ) {}
 
   async getAllCustomerAsync(
@@ -252,5 +268,153 @@ export class CustomerService {
 
     // Convert query builder to paged list with sorting and pagination
     return await toPagedList(queryBuilder, page, limit)
+  }
+
+  async getCustomerByIdAsync(id: number) {
+    if (!id) {
+      return null
+    }
+
+    const cacheKey = this.cacheKeyService.prepareCacheKey(
+      cacheKeyById('customer'),
+      id.toString(),
+    )
+
+    return (
+      (await this.cache.get(cacheKey)) ||
+      (await this.cache.set(
+        cacheKey,
+        await this.customerRepository.findOneBy({ id }),
+        NEST_CACHE_TTL,
+      ))
+    )
+  }
+
+  async getCustomerByGuidAsync(customerGuid: string) {
+    if (!customerGuid) {
+      return null
+    }
+
+    const cacheKey = this.cacheKeyService.prepareCacheKey(
+      cacheKeyCustomerByGuid(),
+      customerGuid,
+    )
+
+    return (
+      (await this.cache.get(cacheKey)) ||
+      (await this.cache.set(
+        cacheKey,
+        await this.customerRepository.findOneBy({ customerGuid }),
+        NEST_CACHE_TTL,
+      ))
+    )
+  }
+
+  async getCustomerByEmailAsync(email: string) {
+    if (!email) {
+      return null
+    }
+
+    const cacheKey = this.cacheKeyService.prepareCacheKey(
+      cacheKeyCustomerByEmail(),
+      email,
+    )
+
+    return (
+      (await this.cache.get(cacheKey)) ||
+      (await this.cache.set(
+        cacheKey,
+        await this.customerRepository.findOneBy({ email }),
+        NEST_CACHE_TTL,
+      ))
+    )
+  }
+
+  async getCustomerByUsernameAsync(username: string) {
+    if (!username) {
+      return null
+    }
+
+    const cacheKey = this.cacheKeyService.prepareCacheKey(
+      cacheKeyCustomerByUsername(),
+      username,
+    )
+
+    return (
+      (await this.cache.get(cacheKey)) ||
+      (await this.cache.set(
+        cacheKey,
+        await this.customerRepository.findOneBy({ username }),
+        NEST_CACHE_TTL,
+      ))
+    )
+  }
+
+  async createCustomerAsync(customer: Partial<Customer>) {
+    customer = this.customerRepository.create(customer)
+    customer.createdOnUtc = moment().utc().toDate()
+
+    const cacheKey = cacheKeyAll('customer')
+    await this.cache.del(cacheKey)
+
+    return await this.customerRepository.save(customer)
+  }
+
+  async updateCustomerAsync(customer: Customer) {
+    customer.modifiedOnUtc = moment().utc().toDate()
+
+    const cacheKeys = [
+      this.cacheKeyService.prepareCacheKey(cacheKeyAll('customer')),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyById('customer'),
+        customer.id.toString(),
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByEmail(),
+        customer.email,
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByGuid(),
+        customer.customerGuid,
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByUsername(),
+        customer.username,
+      ),
+    ]
+    await this.cache.mdel(cacheKeys)
+
+    return await this.customerRepository.save(customer)
+  }
+
+  async deleteCustomerAsync(customer: Customer) {
+    if (!customer) {
+      return null
+    }
+
+    const cacheKeys = [
+      this.cacheKeyService.prepareCacheKey(cacheKeyAll('customer')),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyById('customer'),
+        customer.id.toString(),
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByEmail(),
+        customer.email,
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByGuid(),
+        customer.customerGuid,
+      ),
+      this.cacheKeyService.prepareCacheKey(
+        cacheKeyCustomerByUsername(),
+        customer.username,
+      ),
+    ]
+    await this.cache.mdel(cacheKeys)
+
+    customer.deleted = true
+    customer.deletedOnUtc = moment().utc().toDate()
+    return await this.customerRepository.save(customer)
   }
 }
