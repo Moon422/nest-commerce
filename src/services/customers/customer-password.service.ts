@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { genSalt, hash } from 'bcrypt'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { CustomerPassword } from 'src/entities/customers/customer-password'
 import { Repository } from 'typeorm'
 
@@ -51,7 +51,7 @@ export class CustomerPasswordService {
       if (encrypted === customerPassword.password) {
         return [
           false,
-          `Password was changed on ${customerPassword.createdOnUtc}`,
+          `Password was changed on ${moment(customerPassword.createdOnUtc).tz('Asia/Dhaka').format('ddd, MMM D, YYYY h:mm A')}.`,
         ]
       }
     }
