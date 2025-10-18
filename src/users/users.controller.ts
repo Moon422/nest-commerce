@@ -13,7 +13,6 @@ import { LoginUserDto } from './dtos/login-user.dto'
 import { CurrentUser } from './decorators/current-user.decorator'
 import { User } from './user.entity'
 import { AuthGuard } from './guards/auth.guard'
-import { Cache } from '@nestjs/cache-manager'
 
 @Controller('auth')
 export class UsersController {
@@ -22,8 +21,6 @@ export class UsersController {
   @Get('whoami')
   @UseGuards(AuthGuard)
   async whoAmI(@CurrentUser() currentUser: User | null) {
-    cosnt cache: Cache;
-
     return currentUser ? { message: 'logged in' } : { message: 'not logged in' }
   }
 
