@@ -1,11 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
-import { v4 as uuid4 } from 'uuid'
 
 @Entity()
 export class Customer {
-  constructor() {
-    this.customerGuid = uuid4()
-  }
+  // constructor() {
+  //   this.customerGuid = uuid4()
+  // }
 
   @PrimaryGeneratedColumn()
   id: number
@@ -13,10 +12,10 @@ export class Customer {
   @Column({ length: 36 })
   customerGuid: string
 
-  @Column({ length: 72 })
+  @Column({ length: 72, unique: true })
   username: string
 
-  @Column({ length: 250 })
+  @Column({ length: 250, unique: true })
   email: string
 
   @Column({ length: 128 })
@@ -34,8 +33,8 @@ export class Customer {
   @Column({ length: 512 })
   streetAddress: string
 
-  @Column({ length: 256 })
-  streetAddress2: string
+  @Column({ type: 'varchar', length: 256, nullable: true })
+  streetAddress2: string | null
 
   @Column({ length: 32 })
   zipPostalCode: string
@@ -49,8 +48,8 @@ export class Customer {
   @Column({ type: 'int' })
   countryId: number
 
-  @Column({ length: 14 })
-  phonenumber: string
+  @Column({ type: 'varchar', length: 256, nullable: true })
+  phonenumber: string | null
 
   @Column({ type: 'int', nullable: true })
   currencyId: number | null

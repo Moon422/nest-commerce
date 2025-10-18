@@ -9,7 +9,6 @@ import { CacheKeyService } from '../caching/cache-key.service'
 import {
   cacheKeyAll,
   cacheKeyById,
-  cacheKeyByIds,
   NEST_CACHE_TTL,
 } from '../caching/entity-cache-defaults'
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager'
@@ -320,14 +319,12 @@ export class CustomerService {
       email,
     )
 
-    return (
-      (await this.cache.get(cacheKey)) ||
+    return ((await this.cache.get(cacheKey)) ||
       (await this.cache.set(
         cacheKey,
         await this.customerRepository.findOneBy({ email }),
         NEST_CACHE_TTL,
-      ))
-    )
+      ))) as Customer | null
   }
 
   async getCustomerByUsernameAsync(username: string) {
@@ -351,13 +348,14 @@ export class CustomerService {
   }
 
   async createCustomerAsync(customer: Partial<Customer>) {
-    customer = this.customerRepository.create(customer)
-    customer.createdOnUtc = moment().utc().toDate()
-
     const cacheKey = cacheKeyAll('customer')
     await this.cache.del(cacheKey)
 
-    return await this.customerRepository.save(customer)
+    customer.createdOnUtc = moment().utc().toDate()
+
+    return await this.customerRepository.save(
+      this.customerRepository.create(customer),
+    )
   }
 
   async updateCustomerAsync(customer: Customer) {
