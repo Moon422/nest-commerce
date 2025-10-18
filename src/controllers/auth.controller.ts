@@ -9,7 +9,6 @@ import { LoginDto } from 'src/dtos/login.dto'
 import { RegisterDto } from 'src/dtos/register.dto'
 import { CustomerPasswordService } from 'src/services/customers/customer-password.service'
 import { CustomerService } from 'src/services/customers/customer.service'
-import { v4 as uuid4 } from 'uuid'
 import moment from 'moment-timezone'
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Customer } from 'src/entities/customers/customer'
@@ -96,26 +95,26 @@ export class AuthController {
       password,
     } = registerDto
 
-    console.log(registerDto)
+    let customer = new Customer()
+    customer.username = username
+    customer.email = email
+    customer.phonenumber = phonenumber
+    customer.firstname = firstname
+    customer.lastname = lastname
+    customer.gender = gender
+    customer.dateOfBirth = dateOfBirth
+      ? moment(dateOfBirth).utc().toDate()
+      : null
+    customer.streetAddress = streetAddress
+    customer.streetAddress2 = streetAddress2
+    customer.zipPostalCode = zipPostalCode
+    customer.city = city
+    customer.stateProvinceId = stateProvinceId
+    customer.countryId = countryId
+    customer.currencyId = currencyId
+    customer.languageId = languageId
 
-    const customer = await this.customerService.createCustomerAsync({
-      customerGuid: uuid4(),
-      username,
-      email,
-      phonenumber,
-      firstname,
-      lastname,
-      gender,
-      dateOfBirth: dateOfBirth ? moment(dateOfBirth).utc().toDate() : null,
-      streetAddress,
-      streetAddress2,
-      zipPostalCode,
-      city,
-      stateProvinceId,
-      countryId,
-      currencyId,
-      languageId,
-    })
+    customer = await this.customerService.createCustomerAsync(customer)
 
     await this.customerPasswordService.createPasswordAsync(
       customer.id,

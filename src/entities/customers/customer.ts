@@ -1,10 +1,23 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { v4 as uuid4 } from 'uuid'
 
 @Entity()
 export class Customer {
-  // constructor() {
-  //   this.customerGuid = uuid4()
-  // }
+  constructor() {
+    this.customerGuid = uuid4()
+    this.streetAddress2 = null
+    this.adminComment = null
+    this.hasShoppingCartItems = false
+    this.requireRelogin = false
+    this.failedLoginAttempts = 0
+    this.cannotLoginUntilDateUtc = null
+    this.active = false
+    this.mustChangePassword = false
+    this.deleted = false
+    this.modifiedOnUtc = null
+    this.deletedOnUtc = null
+    this.isTaxExempted = false
+  }
 
   @PrimaryGeneratedColumn()
   id: number
