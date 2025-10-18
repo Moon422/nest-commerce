@@ -7,6 +7,7 @@ import { ReportsModule } from './reports/reports.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { User } from './users/user.entity'
 import { Report } from './reports/report.entity'
+import { CachingModule } from './caching/caching.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Report } from './reports/report.entity'
     MessagesModule,
     UsersModule,
     ReportsModule,
+    CachingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
