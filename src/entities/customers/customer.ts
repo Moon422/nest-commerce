@@ -28,7 +28,7 @@ export class Customer {
   @Column({ length: 6 })
   gender: 'male' | 'female'
 
-  @Column()
+  @Column({ type: 'datetime', nullable: true })
   dateOfBirth: Date | null
 
   @Column({ length: 512 })
@@ -43,19 +43,19 @@ export class Customer {
   @Column({ length: 256 })
   city: string
 
-  @Column()
+  @Column({ type: 'int' })
   stateProvinceId: number
 
-  @Column()
+  @Column({ type: 'int' })
   countryId: number
 
   @Column({ length: 14 })
   phonenumber: string
 
-  @Column()
+  @Column({ type: 'int', nullable: true })
   currencyId: number | null
 
-  @Column()
+  @Column({ type: 'int', nullable: true })
   languageId: number | null
 
   @Column({ length: 1024 })
@@ -70,10 +70,10 @@ export class Customer {
   @Column()
   requireRelogin: boolean
 
-  @Column()
+  @Column({ type: 'int' })
   failedLoginAttempts: number
 
-  @Column()
+  @Column({ type: 'datetime', nullable: true })
   cannotLoginUntilDateUtc: Date | null
 
   @Column()
@@ -82,15 +82,15 @@ export class Customer {
   @Column()
   mustChangePassword: boolean
 
-  @Column()
+  @Column({ type: 'datetime' })
   createdOnUtc: Date
 
-  @Column()
+  @Column({ type: 'datetime', nullable: true })
   modifiedOnUtc: Date | null
 
   @Column()
   deleted: boolean
 
-  @Column()
+  @Column({ type: 'datetime', nullable: true })
   deletedOnUtc: Date | null
 }
